@@ -1,4 +1,10 @@
-import { IsDecimal, IsDefined, IsString, IsUUID } from 'class-validator';
+import {
+  IsDecimal,
+  IsDefined,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateSauceDto {
   @IsUUID()
