@@ -10,6 +10,11 @@ export class CreateSauceDto {
   @IsDecimal()
   price?: number;
 
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+
   @IsUUID()
   createdBy?: string;
 }
