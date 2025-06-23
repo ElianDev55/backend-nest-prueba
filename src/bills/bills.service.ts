@@ -1,0 +1,71 @@
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateBillDetailDto } from 'src/bill-details/dto/update-bill-detail.dto';
+import { Repository } from 'typeorm';
+import { CreateBillDto } from './dto/create-bill.dto';
+import { BillEntity } from './entities/bill.entity';
+
+@Injectable()
+export class BillsService {
+  constructor(
+    @InjectRepository(BillEntity)
+    private billRepository: Repository<BillEntity>,
+  ) {}
+
+  async create(createBillDto: CreateBillDto) {
+    try {
+      const bill = this.billRepository.create(createBillDto);
+      return this.billRepository.save(bill);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async findAll() {
+    try {
+      return this.billRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async findOne(id: string) {
+    try {
+      const bill = await this.billRepository.findOne({ where: { id } });
+      if (!bill) {
+        throw new NotFoundException('Bill not found');
+      }
+      return bill;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async update(id: string, updateBillDto: UpdateBillDetailDto) {
+    try {
+      const bill = await this.billRepository.findOne({ where: { id } });
+      if (!bill) {
+        throw new NotFoundException('Bill not found');
+      }
+      return this.billRepository.update(id, updateBillDto);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      const bill = await this.billRepository.findOne({ where: { id } });
+      if (!bill) {
+        throw new NotFoundException('Bill not found');
+      }
+      return this.billRepository.delete(id);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+}
