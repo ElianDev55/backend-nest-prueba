@@ -3,31 +3,31 @@ import { IsDefined, IsOptional, IsUUID } from 'class-validator';
 export class CreateBillDetailDto {
   @IsUUID()
   @IsOptional()
-  dishes_id: string;
+  dishes_id?: string;
 
   @IsUUID()
   @IsOptional()
-  bill_id: string;
+  bill_id?: string;
 
   @IsUUID()
   @IsOptional()
-  add_id: string;
+  add_id?: string;
 
   @IsUUID()
   @IsOptional()
-  souces_id: string;
+  souces_id?: string;
 
   @IsUUID()
   @IsOptional()
-  drinks_id: string;
+  drinks_id?: string;
 
   @IsUUID()
   @IsOptional()
-  chips_id: string;
+  chips_id?: string;
 
   @IsUUID()
   @IsOptional()
-  total: number;
+  total?: number;
 
   @IsDefined()
   @IsUUID()
