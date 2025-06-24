@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BillsDetailEntity } from 'src/bill-details/entities/bill-detail.entity';
-import { DataSource, In, Repository } from 'typeorm';
+import { Between, DataSource, In, Repository } from 'typeorm';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { UpdateBillDto } from './dto/update-bill.dto';
 import { BillEntity } from './entities/bill.entity';
@@ -81,6 +81,46 @@ export class BillsService {
       return groupedDetails;
     } catch (error) {
       console.log(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async findByUserIdMin(userId: string) {
+    try {
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+      const now = new Date();
+      const bills = await this.billRepository.find({
+        where: {
+          createdBy: { id: userId },
+          created_at: Between(twoMinutesAgo, now),
+        },
+      });
+
+      if (bills.length === 0) {
+        throw new NotFoundException('No bills found');
+      }
+
+      const billDetails = await this.billDetailRepository.find({
+        where: { bill_id: In(bills.map((bill) => bill.id)) },
+        relations: ['diches', 'add', 'souces', 'drinks', 'chips', 'bill'],
+      });
+
+      const groupedDetails = billDetails.reduce(
+        (acc, detail) => {
+          const dichesId = detail.diches?.id;
+          if (dichesId) {
+            if (!acc[dichesId]) {
+              acc[dichesId] = [];
+            }
+            acc[dichesId].push(detail);
+          }
+          return acc;
+        },
+        {} as Record<string, BillsDetailEntity[]>,
+      );
+
+      return groupedDetails;
+    } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }

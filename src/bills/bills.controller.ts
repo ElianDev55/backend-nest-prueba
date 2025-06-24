@@ -101,6 +101,17 @@ export class BillsController {
     return await this.billsService.update(id, updateBillDto);
   }
 
+  @Get('user/min/:userId')
+  @ApiOperation({
+    summary: 'Obtener facturas por id de usuario en los ultimos 2 minutos',
+  })
+  @ApiParam({ name: 'userId', description: 'Id del usuario a buscar' })
+  @ApiResponse({ status: 200, description: 'Facturas encontradas.' })
+  @ApiResponse({ status: 403, description: 'Prohibido.' })
+  async findByUserIdMin(@Param('userId') userId: string) {
+    return await this.billsService.findByUserIdMin(userId);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una factura por su id' })
   @ApiParam({ name: 'id', description: 'Id de la factura a eliminar' })
