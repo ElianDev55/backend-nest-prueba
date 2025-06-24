@@ -7,7 +7,7 @@ export class CreateBillDetailDto {
 
   @IsUUID()
   @IsOptional()
-  dishes_id?: string;
+  diches_id?: string;
 
   @IsUUID()
   @IsOptional()
