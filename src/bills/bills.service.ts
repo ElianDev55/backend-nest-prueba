@@ -5,10 +5,37 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BillsDetailEntity } from 'src/bill-details/entities/bill-detail.entity';
-import { Between, DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { UpdateBillDto } from './dto/update-bill.dto';
 import { BillEntity } from './entities/bill.entity';
+
+interface GroupedBillItem {
+  diches: string;
+  add: string;
+  souces: string;
+  drinks: string;
+  chips: string;
+  price: string;
+  quantity: number;
+  billDetailTotal: number;
+}
+
+export interface FinalBillItem {
+  diches: string;
+  add: string;
+  souces: string;
+  drinks: string;
+  chips: string;
+  price: string;
+  quantity: number;
+  billDetailTotal: string;
+  billTotal: string;
+  createdBy: string;
+  createdByEmail: string;
+  createdByPhone: string;
+  createdByAddress: string;
+}
 
 @Injectable()
 export class BillsService {
@@ -85,42 +112,89 @@ export class BillsService {
     }
   }
 
-  async findByUserIdMin(userId: string) {
+  async SendBillToEmail(bill_id: string): Promise<FinalBillItem[]> {
     try {
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-      const now = new Date();
-      const bills = await this.billRepository.find({
-        where: {
-          createdBy: { id: userId },
-          created_at: Between(twoMinutesAgo, now),
-        },
+      const dichesDetailsByDishId = await this.billDetailRepository.find({
+        where: { bill_id },
+        relations: [
+          'diches',
+          'add',
+          'souces',
+          'drinks',
+          'chips',
+          'bill',
+          'createdBy',
+        ],
       });
 
-      if (bills.length === 0) {
-        throw new NotFoundException('No bills found');
+      if (dichesDetailsByDishId.length === 0) {
+        return [];
       }
 
-      const billDetails = await this.billDetailRepository.find({
-        where: { bill_id: In(bills.map((bill) => bill.id)) },
-        relations: ['diches', 'add', 'souces', 'drinks', 'chips', 'bill'],
-      });
+      const groupedItems = new Map<string, GroupedBillItem>();
 
-      const groupedDetails = billDetails.reduce(
-        (acc, detail) => {
-          const dichesId = detail.diches?.id;
-          if (dichesId) {
-            if (!acc[dichesId]) {
-              acc[dichesId] = [];
-            }
-            acc[dichesId].push(detail);
+      for (const detail of dichesDetailsByDishId) {
+        const dichesName = detail.diches?.name || '';
+        const addName = detail.add?.name || '';
+        const soucesName = detail.souces?.name || '';
+        const drinksName = detail.drinks?.name || '';
+        const chipsName = detail.chips?.name || '';
+        const priceAsNumber = parseFloat(String(detail.total)) || 0;
+
+        const key = `${dichesName}-${addName}-${soucesName}-${drinksName}-${chipsName}-${priceAsNumber}`;
+
+        if (groupedItems.has(key)) {
+          const existingItem = groupedItems.get(key);
+          if (existingItem) {
+            existingItem.quantity += 1;
+            existingItem.billDetailTotal += priceAsNumber;
           }
-          return acc;
+        } else {
+          groupedItems.set(key, {
+            diches: dichesName,
+            add: addName,
+            souces: soucesName,
+            drinks: drinksName,
+            chips: chipsName,
+            price: priceAsNumber.toString(),
+            quantity: 1,
+            billDetailTotal: priceAsNumber,
+          });
+        }
+      }
+
+      const firstDetail = dichesDetailsByDishId[0];
+      const billInfo = {
+        billTotal: firstDetail.bill?.total?.toString() || '0',
+        createdBy: firstDetail.createdBy.name || '',
+        createdByEmail: firstDetail.createdBy.email || '',
+        createdByPhone: firstDetail.createdBy.phone || '',
+        createdByAddress: firstDetail.createdBy.address || '',
+      };
+
+      const bill: FinalBillItem[] = Array.from(groupedItems.values()).map(
+        (item) => {
+          return {
+            diches: item.diches,
+            add: item.add,
+            souces: item.souces,
+            drinks: item.drinks,
+            chips: item.chips,
+            price: item.price,
+            quantity: item.quantity,
+            billDetailTotal: item.billDetailTotal.toFixed(2),
+            billTotal: billInfo.billTotal,
+            createdBy: billInfo.createdBy,
+            createdByEmail: billInfo.createdByEmail,
+            createdByPhone: billInfo.createdByPhone,
+            createdByAddress: billInfo.createdByAddress,
+          };
         },
-        {} as Record<string, BillsDetailEntity[]>,
       );
 
-      return groupedDetails;
+      return bill;
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(error);
     }
   }

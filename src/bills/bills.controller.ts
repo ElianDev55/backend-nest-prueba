@@ -101,15 +101,15 @@ export class BillsController {
     return await this.billsService.update(id, updateBillDto);
   }
 
-  @Get('user/min/:userId')
+  @Get('sendBi-bill/:bill_id')
   @ApiOperation({
     summary: 'Obtener facturas por id de usuario en los ultimos 2 minutos',
   })
-  @ApiParam({ name: 'userId', description: 'Id del usuario a buscar' })
+  @ApiParam({ name: 'bill_id', description: 'Id del usuario a buscar' })
   @ApiResponse({ status: 200, description: 'Facturas encontradas.' })
   @ApiResponse({ status: 403, description: 'Prohibido.' })
-  async findByUserIdMin(@Param('userId') userId: string) {
-    return await this.billsService.findByUserIdMin(userId);
+  async SendBillToEmail(@Param('bill_id') dichesId: string) {
+    return await this.billsService.SendBillToEmail(dichesId);
   }
 
   @Delete(':id')
