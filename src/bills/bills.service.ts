@@ -55,16 +55,28 @@ export class BillsService {
         where: { createdBy: { id: userId } },
       });
 
+      if (bills.length === 0) {
+        throw new NotFoundException('No bills found');
+      }
+
       const billDetails = await this.billDetailRepository.find({
         where: { bill_id: In(bills.map((bill) => bill.id)) },
         relations: ['diches', 'add', 'souces', 'drinks', 'chips', 'bill'],
       });
 
-      if (bills.length === 0) {
-        throw new NotFoundException('No bills found');
-      }
+      const groupedDetails = billDetails.reduce(
+        (acc, detail) => {
+          const dichesId = detail.diches.id;
+          if (!acc[dichesId]) {
+            acc[dichesId] = [];
+          }
+          acc[dichesId].push(detail);
+          return acc;
+        },
+        {} as Record<string, BillsDetailEntity[]>,
+      );
 
-      return billDetails;
+      return groupedDetails;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
