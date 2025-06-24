@@ -66,11 +66,13 @@ export class BillsService {
 
       const groupedDetails = billDetails.reduce(
         (acc, detail) => {
-          const dichesId = detail.diches.id;
-          if (!acc[dichesId]) {
-            acc[dichesId] = [];
+          const dichesId = detail.diches?.id;
+          if (dichesId) {
+            if (!acc[dichesId]) {
+              acc[dichesId] = [];
+            }
+            acc[dichesId].push(detail);
           }
-          acc[dichesId].push(detail);
           return acc;
         },
         {} as Record<string, BillsDetailEntity[]>,
@@ -78,6 +80,7 @@ export class BillsService {
 
       return groupedDetails;
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(error);
     }
   }
