@@ -3,6 +3,10 @@ import { IsDecimal, IsDefined, IsOptional, IsUUID } from 'class-validator';
 export class CreateBillDetailDto {
   @IsUUID()
   @IsOptional()
+  id?: string;
+
+  @IsUUID()
+  @IsOptional()
   dishes_id?: string;
 
   @IsUUID()
@@ -27,7 +31,7 @@ export class CreateBillDetailDto {
 
   @IsOptional()
   @IsDecimal()
-  total?: string;
+  total?: number;
 
   @IsDefined()
   @IsUUID()
