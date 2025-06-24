@@ -54,18 +54,22 @@ export class BillsService {
       const bills = await this.billRepository.find({
         where: { createdBy: { id: userId } },
       });
-      console.log(bills);
 
       const billDetails = await this.billDetailRepository.find({
         where: { bill_id: In(bills.map((bill) => bill.id)) },
-        relations: ['diches', 'add', 'souces', 'drinks', 'chips'],
+        relations: ['diches', 'add', 'souces', 'drinks', 'chips', 'bill'],
       });
+
+      const payload = {
+        bills,
+        billDetails,
+      };
 
       if (bills.length === 0) {
         throw new NotFoundException('No bills found');
       }
 
-      return billDetails;
+      return payload;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
