@@ -60,16 +60,11 @@ export class BillsService {
         relations: ['diches', 'add', 'souces', 'drinks', 'chips', 'bill'],
       });
 
-      const payload = {
-        bills,
-        billDetails,
-      };
-
       if (bills.length === 0) {
         throw new NotFoundException('No bills found');
       }
 
-      return payload;
+      return billDetails;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
