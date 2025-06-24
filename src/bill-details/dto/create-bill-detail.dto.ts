@@ -1,4 +1,4 @@
-import { IsDefined, IsOptional, IsUUID } from 'class-validator';
+import { IsDecimal, IsDefined, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateBillDetailDto {
   @IsUUID()
@@ -25,9 +25,9 @@ export class CreateBillDetailDto {
   @IsOptional()
   chips_id?: string;
 
-  @IsUUID()
   @IsOptional()
-  total?: number;
+  @IsDecimal()
+  total?: string;
 
   @IsDefined()
   @IsUUID()
