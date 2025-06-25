@@ -71,4 +71,9 @@ export class AuthController {
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
+
+  @Post('validate-jwt')
+  validateJwt(@Body() token: string) {
+    return this.authService.validateToken(token);
+  }
 }
