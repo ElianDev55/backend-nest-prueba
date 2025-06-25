@@ -2,9 +2,11 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { Public } from './decorators/public.decorator';
+import { LoginDto, ValidateJwtDto } from './dto/login.dto';
 
 @ApiTags('auth')
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -32,7 +34,7 @@ export class AuthController {
   @Post('validate-token')
   @ApiOperation({ summary: 'Validar token' })
   @ApiBody({
-    type: String,
+    type: ValidateJwtDto,
     examples: {
       a: {
         summary: 'Ejemplo de peticion',
@@ -42,7 +44,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Token validado.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
-  validateToken(@Body() token: string) {
+  validateToken(@Body() token: ValidateJwtDto) {
     return this.authService.validateToken(token);
   }
 
@@ -70,10 +72,5 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
-  }
-
-  @Post('validate-jwt')
-  validateJwt(@Body() token: string) {
-    return this.authService.validateToken(token);
   }
 }
